@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PawGuard · Datenerfassung</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700&display=swap');
+
+:root {
+  --bg:        #0c0f0d;
+  --surface:   #141816;
+  --surface2:  #1b1f1c;
+  --border:    #272d29;
+  --border2:   #333b35;
+  --accent:    #c8f060;
+  --accent2:   #8ab830;
+  --accent-bg: rgba(200,240,96,.1);
+  --red:       #ff5252;
+  --red-bg:    rgba(255,82,82,.1);
+  --amber:     #ffb74d;
+  --text:      #e4ebe5;
+  --text2:     #8a9b8d;
+  --text3:     #5a6b5d;
+  --mono:      'DM Mono', monospace;
+  --sans:      'Syne', sans-serif;
+  --r:         12px;
+  --r-sm:      8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  padding-bottom: 140px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Nav ── */
+nav {
+  display: flex;
+  align-items: center;
+  padding: 20px 18px 16px;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 9px;
+  display: grid; place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+nav h1 { font-size: 15px; font-weight: 700; letter-spacing: .01em; flex: 1; }
+nav span { font-size: 11px; color: var(--text2); font-family: var(--mono); }
+
+/* ── BLE Bar ── */
+.ble-bar {
+  margin: 14px 18px;
+  padding: 11px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  display: flex; align-items: center; gap: 10px;
+}
+.ble-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text3); flex-shrink: 0;
+  transition: background .3s, box-shadow .3s;
+}
+.ble-dot.on  { background: var(--accent); box-shadow: 0 0 7px var(--accent); }
+.ble-dot.err { background: var(--red); }
+.ble-dot.pulsing { background: var(--amber); animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+.ble-info { flex: 1; min-width: 0; }
+.ble-info strong { font-size: 13px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ble-info small  { font-size: 11px; color: var(--text2); font-family: var(--mono); }
+
+.ble-btn {
+  padding: 6px 13px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+  white-space: nowrap;
+}
+.ble-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ble-btn.disc  { border-color: var(--red); color: var(--red); }
+
+/* ── Section ── */
+section { padding: 0 18px 22px; }
+.sec-head {
+  font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 11px; display: flex; align-items: center; gap: 8px;
+}
+.sec-head::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Label Groups ── */
+.grp-title {
+  font-size: 11px; color: var(--accent2); font-family: var(--mono);
+  margin-bottom: 8px; margin-top: 14px;
+}
+.grp-title:first-child { margin-top: 0; }
+
+.label-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px;
+}
+.label-grid.two { grid-template-columns: 1fr 1fr; }
+
+.lbtn {
+  padding: 10px 6px 9px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text2);
+  font-family: var(--sans);
+  font-size: 11px; font-weight: 600;
+  cursor: pointer; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  line-height: 1.25;
+  transition: border-color .15s, color .15s, background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lbtn .ic { font-size: 19px; }
+.lbtn:hover { border-color: var(--border2); color: var(--text); }
+.lbtn.sel   { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+.lbtn.sel-h { background: var(--red-bg);    border-color: var(--red);    color: var(--red); }
+
+/* Add custom label */
+.add-label-row {
+  display: flex; gap: 7px; margin-top: 10px;
+}
+.add-label-row input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--sans); font-size: 12px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color .2s;
+}
+.add-label-row input::placeholder { color: var(--text3); }
+.add-label-row input:focus { border-color: var(--border2); }
+.add-btn {
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text2);
+  font-family: var(--sans); font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+  white-space: nowrap;
+}
+.add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Sensor strip ── */
+.sensor-strip {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+}
+.sensor-cell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 6px;
+  text-align: center;
+}
+.sensor-cell .sk { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-bottom: 3px; }
+.sensor-cell .sv { font-size: 13px; font-family: var(--mono); color: var(--text); transition: color .2s; }
+.sensor-cell .sv.hot { color: var(--accent); }
+
+/* ── Sessions ── */
+.sess-list { display: flex; flex-direction: column; gap: 7px; }
+.sess-empty { text-align: center; padding: 20px; color: var(--text3); font-size: 13px; }
+
+.sess-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 11px 13px;
+  display: flex; align-items: center; gap: 10px;
+}
+.sess-ic { font-size: 20px; flex-shrink: 0; }
+.sess-info { flex: 1; min-width: 0; }
+.sess-label { font-size: 13px; font-weight: 600; }
+.sess-meta  { font-size: 11px; color: var(--text2); font-family: var(--mono); margin-top: 2px; }
+.sess-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.sess-pts {
+  font-size: 11px; font-family: var(--mono); color: var(--accent);
+  background: var(--accent-bg);
+  border-radius: 5px; padding: 2px 7px;
+}
+.upload-tag {
+  font-size: 10px; font-family: var(--mono);
+  padding: 2px 7px; border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text3);
+}
+.upload-tag.ok       { border-color: var(--accent2); color: var(--accent); }
+.upload-tag.err      { border-color: var(--red); color: var(--red); }
+.upload-tag.loading  { border-color: var(--amber); color: var(--amber); animation: blink 1s infinite; }
+
+/* ── Fixed footer ── */
+.footer {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  background: linear-gradient(to top, var(--bg) 65%, transparent);
+  padding: 14px 18px 30px;
+}
+.footer-meta {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px;
+}
+.sel-badge {
+  font-size: 12px; font-family: var(--mono);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 10px;
+  color: var(--text2);
+  transition: border-color .2s, color .2s;
+  max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sel-badge.on  { border-color: var(--accent); color: var(--accent); }
+.sel-badge.hun { border-color: var(--red);    color: var(--red); }
+.timer {
+  font-family: var(--mono); font-size: 18px; font-weight: 500;
+  color: var(--text3); letter-spacing: .04em; transition: color .2s;
+}
+.timer.rec { color: var(--red); }
+
+#rec-btn {
+  width: 100%; padding: 15px; border-radius: var(--r);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text3);
+  font-family: var(--sans); font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+}
+#rec-btn.ready { background: var(--accent); color: #0c0f0d; border-color: var(--accent); }
+#rec-btn.rec   { background: var(--surface2); border-color: var(--red); color: var(--red); animation: blink 1.5s infinite; }
+#rec-btn.rech  { background: var(--red); color: #fff; border-color: var(--red); animation: blink 1.5s infinite; }
+
+/* ── Save modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 50;
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r) var(--r) 0 0;
+  padding: 24px 18px 36px;
+  width: 100%; max-width: 430px; margin: 0 auto;
+  transform: translateY(30px); transition: transform .25s;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal h2 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.modal p  { font-size: 13px; color: var(--text2); margin-bottom: 20px; font-family: var(--mono); }
+
+.modal-summary {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.ms-row { display: flex; flex-direction: column; gap: 2px; }
+.ms-key { font-size: 10px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+.ms-val { font-size: 14px; font-weight: 600; font-family: var(--mono); }
+
+.modal-actions { display: flex; flex-direction: column; gap: 9px; }
+.modal-btn {
+  width: 100%; padding: 13px;
+  border-radius: var(--r-sm);
+  font-family: var(--sans); font-size: 14px; font-weight: 700;
+  cursor: pointer; border: none;
+  transition: opacity .2s;
+}
+.modal-btn:active { opacity: .75; }
+.modal-btn.csv    { background: var(--accent); color: #0c0f0d; }
+.modal-btn.drive  { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+.modal-btn.both   { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); font-size: 12px; padding: 10px; }
+.modal-btn.discard { background: transparent; color: var(--red); border: 1px solid var(--red); }
+
+/* ── Drive auth modal ── */
+#drive-modal .modal-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: var(--mono); font-size: 12px;
+  padding: 10px 12px; margin-bottom: 10px;
+  outline: none;
+}
+#drive-modal .modal-input:focus { border-color: var(--accent); }
+#drive-modal .hint { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-bottom: 14px; }
+
+/* ── Toast ── */
+#toast {
+  position: fixed; bottom: 148px; left: 50%; transform: translateX(-50%) translateY(10px);
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: var(--r-sm); padding: 9px 16px;
+  font-size: 12px; font-family: var(--mono); color: var(--text);
+  opacity: 0; transition: all .25s; pointer-events: none;
+  white-space: nowrap; z-index: 100;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">🐾</div>
+  <h1>PawGuard · Collect</h1>
+  <span id="nav-sess">0 Sessions</span>
+</nav>
+
+<!-- BLE -->
+<div class="ble-bar">
+  <div class="ble-dot" id="ble-dot"></div>
+  <div class="ble-info">
+    <strong id="ble-title">Nicht verbunden</strong>
+    <small id="ble-sub">Warte auf Halsband…</small>
+  </div>
+  <button class="ble-btn" id="ble-btn" onclick="toggleBle()">Verbinden</button>
+</div>
+
+<!-- Labels -->
+<section>
+  <div class="sec-head">Verhalten wählen</div>
+
+  <div class="grp-title">Jagd &amp; Beute</div>
+  <div class="label-grid" id="grid-hunt">
+    <button class="lbtn" data-label="anschleichen" data-group="hunting" onclick="selectLabel(this)"><span class="ic">🦶</span>Anschleichen</button>
+    <button class="lbtn" data-label="lauern"       data-group="hunting" onclick="selectLabel(this)"><span class="ic">👁</span>Lauern</button>
+    <button class="lbtn" data-label="springen"     data-group="hunting" onclick="selectLabel(this)"><span class="ic">⚡</span>Springen</button>
+    <button class="lbtn" data-label="hetzen"       data-group="hunting" onclick="selectLabel(this)"><span class="ic">💨</span>Hetzen</button>
+    <button class="lbtn" data-label="spielen"      data-group="hunting" onclick="selectLabel(this)"><span class="ic">🪀</span>Spielen</button>
+    <button class="lbtn" data-label="beute"        data-group="hunting" onclick="selectLabel(this)"><span class="ic">🐭</span>Beute tragen</button>
+  </div>
+
+  <div class="grp-title">Bewegung</div>
+  <div class="label-grid" id="grid-move">
+    <button class="lbtn" data-label="gehen"           data-group="move" onclick="selectLabel(this)"><span class="ic">🚶</span>Gehen</button>
+    <button class="lbtn" data-label="laufen"          data-group="move" onclick="selectLabel(this)"><span class="ic">🏃</span>Laufen</button>
+    <button class="lbtn" data-label="klettern"        data-group="move" onclick="selectLabel(this)"><span class="ic">🧗</span>Klettern</button>
+    <button class="lbtn" data-label="springen-normal" data-group="move" onclick="selectLabel(this)"><span class="ic">🔝</span>Springen</button>
+    <button class="lbtn" data-label="tragen"          data-group="move" onclick="selectLabel(this)"><span class="ic">📦</span>Tragen</button>
+    <button class="lbtn" data-label="schutteln"       data-group="move" onclick="selectLabel(this)"><span class="ic">🫨</span>Schütteln</button>
+  </div>
+
+  <div class="grp-title">Ruhe &amp; Pflege</div>
+  <div class="label-grid two" id="grid-rest">
+    <button class="lbtn" data-label="schlafen" data-group="rest" onclick="selectLabel(this)"><span class="ic">💤</span>Schlafen</button>
+    <button class="lbtn" data-label="ruhen"    data-group="rest" onclick="selectLabel(this)"><span class="ic">🛋️</span>Ruhen</button>
+    <button class="lbtn" data-label="putzen"   data-group="rest" onclick="selectLabel(this)"><span class="ic">🧼</span>Putzen</button>
+    <button class="lbtn" data-label="fressen"  data-group="rest" onclick="selectLabel(this)"><span class="ic">🍽️</span>Fressen</button>
+  </div>
+
+  <div class="grp-title">Eigene Labels</div>
+  <div class="label-grid two" id="grid-custom"></div>
+  <div class="add-label-row">
+    <input type="text" id="custom-input" placeholder="Neues Label…" maxlength="24" onkeydown="if(event.key==='Enter')addCustomLabel()"/>
+    <button class="add-btn" onclick="addCustomLabel()">+ Hinzufügen</button>
+  </div>
+</section>
+
+<!-- Sensor Strip -->
+<section>
+  <div class="sec-head">Live-Sensorwerte</div>
+  <div class="sensor-strip">
+    <div class="sensor-cell"><div class="sk">lax</div><div class="sv" id="v-lax">—</div></div>
+    <div class="sensor-cell"><div class="sk">lay</div><div class="sv" id="v-lay">—</div></div>
+    <div class="sensor-cell"><div class="sk">laz</div><div class="sv" id="v-laz">—</div></div>
+    <div class="sensor-cell"><div class="sk">roll</div><div class="sv" id="v-roll">—</div></div>
+    <div class="sensor-cell"><div class="sk">pitch</div><div class="sv" id="v-pitch">—</div></div>
+    <div class="sensor-cell"><div class="sk">yaw</div><div class="sv" id="v-yaw">—</div></div>
+  </div>
+</section>
+
+<!-- Sessions -->
+<section>
+  <div class="sec-head" style="justify-content:space-between">
+    <span style="display:flex;align-items:center;gap:8px">
+      Sessions
+      <span style="content:'';flex:1;height:1px;background:var(--border);display:block;width:60px"></span>
+    </span>
+    <button onclick="exportAll()" id="export-btn" style="display:none;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--sans);font-size:11px;font-weight:600;padding:4px 10px;cursor:pointer">CSV Export</button>
+  </div>
+  <div class="sess-list" id="sess-list">
+    <div class="sess-empty">Noch keine Sessions.</div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-meta">
+    <div class="sel-badge" id="sel-badge">Kein Label</div>
+    <div class="timer" id="timer">0:00</div>
+  </div>
+  <button id="rec-btn" disabled onclick="toggleRecord()">Label und Halsband wählen</button>
+</div>
+
+<!-- Save Modal -->
+<div class="modal-overlay" id="save-modal">
+  <div class="modal">
+    <h2>Session speichern</h2>
+    <p id="save-info">—</p>
+    <div class="modal-summary" id="save-summary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn csv"     onclick="saveAs('csv')">📥 Als CSV herunterladen</button>
+      <button class="modal-btn drive"   onclick="saveAs('drive')">☁ In Google Drive speichern</button>
+      <button class="modal-btn both"    onclick="saveAs('both')">Beides</button>
+      <button class="modal-btn discard" onclick="discardSession()">Verwerfen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drive Auth Modal -->
+<div class="modal-overlay" id="drive-modal">
+  <div class="modal">
+    <h2>Google Drive verbinden</h2>
+    <p>Gib deine OAuth Client ID ein. Einmalig nötig.</p>
+    <input class="modal-input" type="text" id="client-id-input" placeholder="xxxx.apps.googleusercontent.com"/>
+    <p class="hint">Erstellen unter console.cloud.google.com → APIs &amp; Services → OAuth 2.0 → Web App. Authorisierte Herkunft: deine GitHub Pages URL.</p>
+    <div class="modal-actions">
+      <button class="modal-btn csv" onclick="connectDrive()">Verbinden</button>
+      <button class="modal-btn discard" onclick="closeModal('drive-modal')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BLE_SVC    = '7c2a2e10-2d3b-4bb3-9c9f-111111111111';
+const BLE_MOTION = '7c2a2e12-2d3b-4bb3-9c9f-333333333333';
+const ICONS = {
+  anschleichen:'🦶', lauern:'👁', springen:'⚡', hetzen:'💨',
+  spielen:'🪀', beute:'🐭', gehen:'🚶', laufen:'🏃',
+  klettern:'🧗', 'springen-normal':'🔝', tragen:'📦', schutteln:'🫨',
+  schlafen:'💤', ruhen:'🛋️', putzen:'🧼', fressen:'🍽️'
+};
+
+let bleDevice = null, bleChar = null;
+let selLabel = null, selGroup = null;
+let isRec = false, recBuf = [], recStart = null, timerTick = null;
+let sessions = [];
+let pendingSession = null;
+let driveToken = null, driveFolderId = null;
+let clientId = localStorage.getItem('pg_client_id') || '';
+
+// ── BLE ──────────────────────────────────────────────────────────────────
+async function toggleBle() {
+  if (bleDevice && bleDevice.gatt.connected) { bleDevice.gatt.disconnect(); return; }
+  try {
+    setBleDot('pulsing'); document.getElementById('ble-title').textContent = 'Verbinde…';
+    bleDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ name: 'CATCOLLAR' }], optionalServices: [BLE_SVC]
+    });
+    bleDevice.addEventListener('gattserverdisconnected', onDisc);
+    const srv = await bleDevice.gatt.connect();
+    const svc = await srv.getPrimaryService(BLE_SVC);
+    bleChar    = await svc.getCharacteristic(BLE_MOTION);
+    await bleChar.startNotifications();
+    bleChar.addEventListener('characteristicvaluechanged', onMotion);
+    setBleDot('on');
+    document.getElementById('ble-title').textContent = 'CATCOLLAR';
+    document.getElementById('ble-sub').textContent   = 'Verbunden · Daten empfangen';
+    document.getElementById('ble-btn').textContent   = 'Trennen';
+    document.getElementById('ble-btn').classList.add('disc');
+    updateRecBtn();
+  } catch(e) {
+    setBleDot('err');
+    document.getElementById('ble-title').textContent = 'Fehler';
+    document.getElementById('ble-sub').textContent   = e.message || 'Verbindung fehlgeschlagen';
+  }
+}
+function onDisc() {
+  bleChar = null;
+  setBleDot('');
+  document.getElementById('ble-title').textContent = 'Getrennt';
+  document.getElementById('ble-sub').textContent   = 'Halsband nicht verbunden';
+  document.getElementById('ble-btn').textContent   = 'Verbinden';
+  document.getElementById('ble-btn').classList.remove('disc');
+  updateRecBtn();
+}
+function setBleDot(cls) {
+  document.getElementById('ble-dot').className = 'ble-dot' + (cls ? ' '+cls : '');
+}
+function onMotion(e) {
+  try {
+    const d = JSON.parse(new TextDecoder().decode(e.target.value));
+    updateSensors(d);
+    if (isRec) recBuf.push({ ts: Date.now(), lax:d.lax, lay:d.lay, laz:d.laz, roll:d.roll, pitch:d.pitch, yaw:d.yaw, moving: d.moving?1:0 });
+  } catch(_) {}
+}
+
+// ── Sensors ──────────────────────────────────────────────────────────────
+const THR = { lax:.5, lay:.5, laz:.5, roll:25, pitch:25, yaw:40 };
+function updateSensors(d) {
+  ['lax','lay','laz','roll','pitch','yaw'].forEach(k => {
+    const el = document.getElementById('v-'+k);
+    if (!el) return;
+    el.textContent = typeof d[k] === 'number' ? d[k].toFixed(2) : '—';
+    el.classList.toggle('hot', Math.abs(d[k]) > THR[k]);
+  });
+}
+
+// ── Label selection ───────────────────────────────────────────────────────
+function selectLabel(btn) {
+  if (isRec) return;
+  document.querySelectorAll('.lbtn').forEach(b => b.classList.remove('sel','sel-h'));
+  selLabel = btn.dataset.label;
+  selGroup = btn.dataset.group;
+  btn.classList.add(selGroup === 'hunting' ? 'sel-h' : 'sel');
+  const badge = document.getElementById('sel-badge');
+  badge.textContent = btn.querySelector('.ic').textContent + ' ' + selLabel;
+  badge.className = 'sel-badge ' + (selGroup === 'hunting' ? 'hun' : 'on');
+  updateRecBtn();
+}
+
+// ── Custom labels ─────────────────────────────────────────────────────────
+function addCustomLabel() {
+  const inp = document.getElementById('custom-input');
+  const val = inp.value.trim().toLowerCase().replace(/\s+/g,'-');
+  if (!val) return;
+  const grid = document.getElementById('grid-custom');
+  const btn = document.createElement('button');
+  btn.className = 'lbtn';
+  btn.dataset.label = val;
+  btn.dataset.group = 'custom';
+  btn.onclick = function() { selectLabel(this); };
+  btn.innerHTML = '<span class="ic">🏷️</span>' + inp.value.trim();
+  grid.appendChild(btn);
+  inp.value = '';
+  showToast('Label "' + val + '" hinzugefügt');
+}
+
+// ── Record ────────────────────────────────────────────────────────────────
+function updateRecBtn() {
+  const btn = document.getElementById('rec-btn');
+  const ok = selLabel && bleChar;
+  btn.disabled = !ok && !isRec;
+  if (isRec) {
+    btn.className = selGroup === 'hunting' ? 'rech' : 'rec';
+    btn.textContent = '⏹ Aufnahme stoppen';
+  } else if (ok) {
+    btn.className = 'ready';
+    btn.textContent = 'Aufnahme starten';
+  } else {
+    btn.className = '';
+    btn.textContent = !bleChar ? 'Halsband verbinden' : 'Label wählen';
+  }
+}
+function toggleRecord() {
+  isRec ? stopRecord() : startRecord();
+}
+function startRecord() {
+  isRec = true; recBuf = []; recStart = Date.now();
+  document.querySelectorAll('.lbtn').forEach(b => b.style.opacity = '.35');
+  timerTick = setInterval(() => {
+    const s = Math.floor((Date.now()-recStart)/1000);
+    const el = document.getElementById('timer');
+    el.textContent = Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    el.className = 'timer rec';
+  }, 500);
+  updateRecBtn();
+}
+function stopRecord() {
+  clearInterval(timerTick);
+  isRec = false;
+  document.getElementById('timer').className = 'timer';
+  document.getElementById('timer').textContent = '0:00';
+  document.querySelectorAll('.lbtn').forEach(b => b.style.opacity = '');
+  updateRecBtn();
+
+  if (recBuf.length < 5) { showToast('⚠ Zu wenig Daten – verworfen'); return; }
+
+  pendingSession = {
+    id: 'sess_' + Date.now(),
+    label: selLabel, group: selGroup,
+    startIso: new Date(recStart).toISOString(),
+    durationSec: +((Date.now()-recStart)/1000).toFixed(1),
+    sampleCount: recBuf.length,
+    data: [...recBuf]
+  };
+  openSaveModal();
+}
+
+// ── Save Modal ────────────────────────────────────────────────────────────
+function openSaveModal() {
+  const s = pendingSession;
+  document.getElementById('save-info').textContent =
+    s.sampleCount + ' Samples · ' + s.durationSec + 's · ' + new Date(s.startIso).toLocaleTimeString('de-DE');
+  document.getElementById('save-summary').innerHTML = `
+    <div class="ms-row"><div class="ms-key">Label</div><div class="ms-val">${s.label}</div></div>
+    <div class="ms-row"><div class="ms-key">Gruppe</div><div class="ms-val">${s.group}</div></div>
+    <div class="ms-row"><div class="ms-key">Samples</div><div class="ms-val">${s.sampleCount}</div></div>
+    <div class="ms-row"><div class="ms-key">Dauer</div><div class="ms-val">${s.durationSec}s</div></div>
+  `;
+  document.getElementById('save-modal').classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+async function saveAs(mode) {
+  closeModal('save-modal');
+  const s = pendingSession;
+  if (!s) return;
+
+  if (mode === 'csv' || mode === 'both') downloadCsv(s);
+  if (mode === 'drive' || mode === 'both') {
+    if (!driveToken) { openDriveModal(mode); return; }
+    await uploadDrive(s);
+  }
+
+  sessions.unshift(s);
+  renderSessions();
+  pendingSession = null;
+  showToast('✓ Session gespeichert');
+}
+
+function discardSession() {
+  pendingSession = null;
+  closeModal('save-modal');
+  showToast('Session verworfen');
+}
+
+// ── CSV ───────────────────────────────────────────────────────────────────
+function toCsv(s) {
+  const meta = `# session_id,${s.id}\n# label,${s.label}\n# group,${s.group}\n# start,${s.startIso}\n# duration_sec,${s.durationSec}\n# sample_count,${s.sampleCount}\n`;
+  const header = 'timestamp_ms,lax,lay,laz,roll,pitch,yaw,moving\n';
+  const rows = s.data.map(r => `${r.ts},${r.lax},${r.lay},${r.laz},${r.roll},${r.pitch},${r.yaw},${r.moving}`).join('\n');
+  return meta + header + rows;
+}
+function downloadCsv(s) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([toCsv(s)], { type:'text/csv' }));
+  a.download = `pawguard_${s.label}_${s.id}.csv`;
+  a.click();
+}
+function exportAll() {
+  sessions.forEach(downloadCsv);
+}
+
+// ── Drive ─────────────────────────────────────────────────────────────────
+let _pendingDriveMode = null;
+function openDriveModal(mode) {
+  _pendingDriveMode = mode;
+  document.getElementById('client-id-input').value = clientId;
+  document.getElementById('drive-modal').classList.add('open');
+}
+function connectDrive() {
+  clientId = document.getElementById('client-id-input').value.trim();
+  if (!clientId) { showToast('Client ID fehlt'); return; }
+  localStorage.setItem('pg_client_id', clientId);
+  closeModal('drive-modal');
+  const gis = document.createElement('script');
+  gis.src = 'https://accounts.google.com/gsi/client';
+  gis.onload = () => {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: async (resp) => {
+        if (resp.error) { showToast('Drive Auth fehlgeschlagen'); return; }
+        driveToken = resp.access_token;
+        driveFolderId = await getOrCreateFolder('PawGuard-Training');
+        showToast('✓ Drive verbunden');
+        if (_pendingDriveMode && pendingSession) {
+          await uploadDrive(pendingSession);
+          sessions.unshift(pendingSession);
+          renderSessions();
+          pendingSession = null;
+          _pendingDriveMode = null;
+        }
+      }
+    });
+    client.requestAccessToken();
+  };
+  document.head.appendChild(gis);
+}
+async function getOrCreateFolder(name) {
+  const r = await driveReq(`files?q=name='${name}'+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id)`);
+  if (r.files && r.files.length) return r.files[0].id;
+  const f = await driveReq('files','POST',{ name, mimeType:'application/vnd.google-apps.folder' });
+  return f.id;
+}
+async function uploadDrive(s) {
+  s.uploadStatus = 'loading'; renderSessions();
+  try {
+    const csv = toCsv(s);
+    const fname = `pawguard_${s.label}_${s.id}.csv`;
+    const meta = { name: fname, parents: driveFolderId ? [driveFolderId] : [] };
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(meta)], { type:'application/json' }));
+    form.append('file',     new Blob([csv],                   { type:'text/csv' }));
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method:'POST', headers:{ Authorization:`Bearer ${driveToken}` }, body: form
+    });
+    s.uploadStatus = res.ok ? 'ok' : 'err';
+  } catch(_) { s.uploadStatus = 'err'; }
+  renderSessions();
+}
+async function driveReq(path, method='GET', body=null) {
+  const res = await fetch(`https://www.googleapis.com/drive/v3/${path}`, {
+    method, headers:{ Authorization:`Bearer ${driveToken}`, ...(body?{'Content-Type':'application/json'}:{}) },
+    ...(body?{ body:JSON.stringify(body) }:{})
+  });
+  return res.json();
+}
+
+// ── Sessions render ───────────────────────────────────────────────────────
+function renderSessions() {
+  const list = document.getElementById('sess-list');
+  document.getElementById('nav-sess').textContent = sessions.length + ' Session' + (sessions.length !== 1 ? 's' : '');
+  document.getElementById('export-btn').style.display = sessions.length ? '' : 'none';
+  if (!sessions.length) { list.innerHTML = '<div class="sess-empty">Noch keine Sessions.</div>'; return; }
+  list.innerHTML = sessions.map(s => `
+    <div class="sess-item">
+      <div class="sess-ic">${ICONS[s.label] || '🏷️'}</div>
+      <div class="sess-info">
+        <div class="sess-label">${s.label}</div>
+        <div class="sess-meta">${new Date(s.startIso).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})} · ${s.durationSec}s</div>
+      </div>
+      <div class="sess-right">
+        <div class="sess-pts">${s.sampleCount} pts</div>
+        ${s.uploadStatus ? `<div class="upload-tag ${s.uploadStatus}">${s.uploadStatus==='ok'?'Drive ✓':s.uploadStatus==='loading'?'lädt…':'Fehler'}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (!navigator.bluetooth) {
+    setBleDot('err');
+    document.getElementById('ble-title').textContent = 'Kein Web Bluetooth';
+    document.getElementById('ble-sub').textContent   = 'Chrome/Edge auf Desktop oder Android';
+    document.getElementById('ble-btn').disabled = true;
+  }
+  renderSessions();
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+  });
+});
+</script>
+</body>
+</html>
