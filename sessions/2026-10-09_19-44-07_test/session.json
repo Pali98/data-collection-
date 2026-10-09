@@ -1,0 +1,92 @@
+{
+  "columns" : {
+    "ax_ay_az" : "Beschleunigung inkl. Schwerkraft in m\/s^2, Sensor-Koordinaten",
+    "gx_gy_gz" : "Drehrate in rad\/s",
+    "label_times" : "start_ms\/end_ms der Labels in ms seit Session-Start (iPhone-Uhr); Genauigkeit durch Reaktionszeit beim Tippen begrenzt (ca. 0,3 bis 1 s)",
+    "lin_ax_lin_ay_lin_az" : "Lineare Beschleunigung ohne Schwerkraft in m\/s^2",
+    "qw_qx_qy_qz" : "Orientierung als Quaternion, BNO085 Game Rotation Vector (ohne Magnetometer)",
+    "t_ms" : "Millisekunden seit Session-Start",
+    "unix_ms" : "Unix-Zeit in ms (Startzeit iPhone + t_ms)",
+    "unsure" : "1 = Label wurde als unsicher markiert"
+  },
+  "hunts" : [
+
+  ],
+  "label_schema" : {
+    "behavior" : {
+      "climbing" : "Klettern",
+      "digging" : "Graben \/ Ausscheiden",
+      "drinking" : "Trinken",
+      "eating" : "Fressen",
+      "grooming" : "Putzen",
+      "hunting" : "Jagdverhalten",
+      "jump_down" : "Springen runter",
+      "jump_up" : "Springen hoch",
+      "lying" : "Ruhen liegend",
+      "playing" : "Spielen",
+      "running" : "Rennen \/ Sprint",
+      "scratching" : "Kratzen (Hinterbein)",
+      "shaking" : "Schütteln",
+      "sitting" : "Sitzen",
+      "social" : "Sozialkontakt",
+      "standing" : "Stehen",
+      "trotting" : "Traben",
+      "unknown" : "Außer Sicht \/ unklar",
+      "walking" : "Gehen"
+    },
+    "environment" : {
+      "indoor" : "Drinnen",
+      "outdoor" : "Draußen"
+    },
+    "event" : {
+      "collar_adjusted" : "Halsband angepasst",
+      "sync_marker" : "Sync-Marker"
+    },
+    "hunt_outcome" : {
+      "fail" : "erfolglos",
+      "success" : "erfolgreich",
+      "unclear" : "unklar"
+    },
+    "hunt_phase" : {
+      "abort" : "Abbruch",
+      "catch" : "Packen \/ Fangen",
+      "chase" : "Verfolgen",
+      "crouching" : "Lauern",
+      "fixating" : "Fixieren",
+      "kill_bite" : "Tötungsbiss",
+      "pounce" : "Ansprung",
+      "prey_carry" : "Beute tragen",
+      "prey_eat" : "Beute fressen",
+      "prey_play" : "Spielen mit Beute",
+      "searching" : "Suchen \/ Schnüffeln",
+      "stalking" : "Anschleichen"
+    },
+    "prey" : {
+      "bird" : "Vogel",
+      "insect" : "Insekt",
+      "mouse" : "Maus",
+      "reptile" : "Reptil",
+      "toy" : "Spielzeug (Kontrolle)",
+      "unknown" : "unbekannt"
+    },
+    "surface" : {
+      "furniture" : "Möbel \/ Boden innen",
+      "grass" : "Wiese",
+      "other" : "Sonstiges",
+      "pavement" : "Pflaster \/ Weg",
+      "soil" : "Erde \/ Beet",
+      "tree" : "Baum \/ Zaun"
+    }
+  },
+  "meta" : {
+    "cat_name" : "Test",
+    "collar_position" : "Sensor unten am Hals",
+    "end_unix_ms" : 1791567859066,
+    "firmware" : "PawGuard Logger v1",
+    "label_schema_version" : 1,
+    "notes" : "",
+    "sample_rate_hz" : 50,
+    "session_id" : "2026-10-09_19-44-07_test",
+    "start_unix_ms" : 1791567847047
+  }
+}
