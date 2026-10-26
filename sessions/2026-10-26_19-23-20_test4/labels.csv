@@ -1,0 +1,11 @@
+level,label,start_ms,end_ms,duration_ms,hunt_id,unsure
+behavior,unknown,0,4034,4034,,0
+environment,indoor,2289,119118,116829,,0
+behavior,walking,4034,18238,14204,,0
+behavior,standing,18238,39523,21285,,0
+behavior,walking,39523,54126,14603,,0
+behavior,standing,54126,86105,31979,,0
+behavior,walking,86105,87615,1510,,0
+behavior,standing,87615,93728,6113,,0
+behavior,walking,93728,105976,12248,,0
+behavior,sitting,105976,119118,13142,,0
