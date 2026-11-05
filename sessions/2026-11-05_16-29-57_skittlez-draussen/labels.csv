@@ -1,0 +1,17 @@
+level,label,start_ms,end_ms,duration_ms,hunt_id,unsure
+behavior,unknown,0,4918,4918,,0
+environment,indoor,2775,157259,154484,,0
+behavior,sitting,4918,16660,11742,,0
+behavior,standing,16660,31462,14802,,0
+behavior,walking,31462,39884,8422,,0
+behavior,standing,39884,65564,25680,,0
+behavior,sitting,65564,80716,15152,,0
+behavior,head_turn_left,80716,83166,2450,,0
+behavior,sitting,83166,88801,5635,,0
+behavior,walking,88801,90842,2041,,0
+behavior,standing,90842,92820,1978,,0
+behavior,sitting,92820,106193,13373,,0
+behavior,head_turn_right,106193,112321,6128,,0
+behavior,sitting,112321,129747,17426,,0
+behavior,head_turn_right,129747,138246,8499,,0
+behavior,sitting,138246,157259,19013,,0
